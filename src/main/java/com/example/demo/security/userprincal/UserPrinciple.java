@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class UserPrinciple implements UserDetails {
@@ -53,6 +54,14 @@ public class UserPrinciple implements UserDetails {
         this.name = name;
     }
 
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles;
@@ -86,5 +95,13 @@ public class UserPrinciple implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+    @Override //Ham so sanh OBJ de lay avatar
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        UserPrinciple user = (UserPrinciple) o;
+        return Objects.equals(id, user.id);
     }
 }
