@@ -25,7 +25,7 @@ import javax.validation.Valid;
 import java.util.HashSet;
 import java.util.Set;
 
-@RequestMapping("/api/auth")
+@RequestMapping("/api")
 @RestController
 @CrossOrigin(origins = "*")
 public class AuthController {
