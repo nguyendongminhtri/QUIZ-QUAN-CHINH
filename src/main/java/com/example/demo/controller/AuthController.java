@@ -1,8 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.dto.request.ChangeAvatar;
-import com.example.demo.dto.request.SignInForm;
-import com.example.demo.dto.request.SignUpForm;
+import com.example.demo.dto.request.*;
 import com.example.demo.dto.response.JwtResponse;
 import com.example.demo.dto.response.ResponMessage;
 import com.example.demo.model.Role;
@@ -106,5 +104,61 @@ public class AuthController {
         } catch (UsernameNotFoundException exception){
             return new ResponseEntity<>(new ResponMessage(exception.getMessage()), HttpStatus.NOT_FOUND);
         }
+    }
+    @PutMapping("/change-password")
+    public ResponseEntity<?> changePassword(HttpServletRequest request, @Valid @RequestBody ChangePasswordForm changePasswordForm) {
+        String jwt = jwtTokenFilter.getJwt(request);
+        String username = jwtProvider.getUerNameFromToken(jwt);
+        User user;
+        try {
+            user = userService
+                    .findByUsername(username)
+                    .orElseThrow(
+                            () -> new UsernameNotFoundException("User Not Found with -> username:" + username));
+            boolean matches = passwordEncoder.matches(changePasswordForm.getCurrentPassword(), user.getPassword());
+            if (changePasswordForm.getNewPassword() != null) {
+                if (matches) {
+                    user.setPassword(passwordEncoder.encode(changePasswordForm.getNewPassword()));
+                    userService.save(user);
+                } else {
+                    return new ResponseEntity(new ResponMessage("no"), HttpStatus.OK);
+                }
+            }
+            return new ResponseEntity(new ResponMessage("yes"), HttpStatus.OK);
+        } catch (UsernameNotFoundException exception) {
+            return new ResponseEntity<>(new ResponMessage(exception.getMessage()), HttpStatus.NOT_FOUND);
+        }
+    }
+    @PutMapping("/change-profile")
+    public ResponseEntity<?> updateProfile(HttpServletRequest httpServletRequest, @Valid @RequestBody ChangeProfileForm changeProfile){
+//        BufferedWriter writer = new BufferedWriter(new FileWriter("profile.txt"));
+//        writer.newLine();
+        String jwt = jwtTokenFilter.getJwt(httpServletRequest);
+        String username = jwtProvider.getUerNameFromToken(jwt);
+        User user;
+
+        try {
+
+            if (userService.existsByUsername(changeProfile.getUsername())) {
+
+                return new ResponseEntity(new ResponMessage("nouser"), HttpStatus.OK);
+            }
+            if(userService.existsByEmail(changeProfile.getEmail())){
+                return new ResponseEntity(new ResponMessage("noemail"), HttpStatus.OK);
+            }
+//          User user = userDetailsService.getCurrentUser();
+            user = userService.findByUsername(username).orElseThrow(() -> new UsernameNotFoundException("User Not Fount with -> username:"+username));
+            user.setName(changeProfile.getName());
+//                user.setAvatar(changeProfile.getAvatar());
+            user.setUsername(changeProfile.getUsername());
+            user.setEmail(changeProfile.getEmail());
+            userService.save(user);
+//            return new ResponseEntity<>(new ResponseMessage("yes"), HttpStatus.OK);
+            return new ResponseEntity<>(new ResponMessage("yes"), HttpStatus.OK);
+
+        } catch (UsernameNotFoundException exception) {
+            return new ResponseEntity<>(new ResponMessage("exception"), HttpStatus.OK);
+        }
+
     }
 }
